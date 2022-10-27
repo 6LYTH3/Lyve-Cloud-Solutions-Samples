@@ -9,7 +9,7 @@ from parsers.iam import ParserIAM
 from typing import Optional
 
 def run(collectFromDate : Optional[datetime] = None):
-    d1 = datetime.now()
+    d1 = datetime.now(timezone.utc)
     # Default S3 use UTC timezone.
     # lastHour = datetime.now(timezone.utc) - timedelta(hours=2)
     lastHour = collectFromDate if collectFromDate else datetime.now(timezone.utc) - timedelta(hours=2)
@@ -37,7 +37,10 @@ def run(collectFromDate : Optional[datetime] = None):
 
         done(log['key'])
         
-    d2 = datetime.now()
+    d2 = datetime.now(timezone.utc)
+    with open('lastr_run.time','wt') as fp:
+        dt_str = d2.strftime('%Y-%m-%d %H:%M:%S')
+        fp.write(dt_str)
     d3 = d2-d1
     print(f"END - Time spent: {str(d3)}")
 

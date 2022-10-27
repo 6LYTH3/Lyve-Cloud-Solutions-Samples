@@ -27,7 +27,6 @@ Test by go to [localhost:8086](http://localhost:8086).
 See more information [ `here` ](https://docs.influxdata.com/influxdb/v2.0/install/?t=Docker)
 
 # Install Grafana
-
 Download the Installer for your machine [`here`](https://grafana.com/grafana/download)
 
 # Known Limitations
@@ -125,8 +124,7 @@ influxdb:
 
 ### **Step 3: Pulling Log Data into InfluxDB**
 
-### Option 1
-
+### Option 1 
 ### Streaming Data
 
 The application will operate in `Streaming mode` by default.
@@ -137,24 +135,20 @@ Streaming mode will continue load data from Lyve Cloud S3 API AuditLog bucket to
 **In case** you need to change a schedule, You can edit the `Streaming` function in `main.py`
 
 On this line
-
 ```python
 scheduler.add_job(executor.run,trigger='cron',minute='0',hour='*')
 ```
-
 Follow this [`link`](https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html) for more information about `cron`
 
-### Option 2
-
+### Option 2 
 ### One Time Pulling (Manual adjust period)
 
 This feature is for pulling data from Lyve Cloud S3 API Auditlog bucket to influxdb manually by input specific period.
 
-As **Known Limitations**
+As **Known Limitations** 
+>S3 API AuditLogs generated before the application is started will not be pulled.
 
-> S3 API AuditLogs generated before the application is started will not be pulled.
-
-If you want to pulling the S3 API Auditlog before the application start, You need to run `OnetimePulling` function in `main.py`
+If you want to pulling the S3 API Auditlog before the application start, You need to run `OnetimePulling` function in `main.py` 
 
 ```python
 def OnetimePulling():
@@ -165,7 +159,6 @@ if __name__ == '__main__':
     # Streaming()
     OnetimePulling()
 ```
-
 As the example code above the Application will pull the S3 API Audit logs that generated 3 hours ago.
 
 You need to edit the the `timedelta` function to the time period for which you wish to pull the S3 API Audit logs.
@@ -260,13 +253,14 @@ and
 [`S3 logs`](https://help.lyvecloud.seagate.com/en/s3-api-audit-logs.html#example-of-s3-api-audit-logs)
 
 Create simple dashboard for analysis and monitoring
-
 - Average response time by API per day
 - API time to response by bucket
 - API Call by bucket per day
 - Error count by bucket per day
 - Total API call by bucket
 - Max API Response time
+
+
 
 1. In the "Dashboards" menu, Click on "manage" or "browse".
 
@@ -281,7 +275,7 @@ Create simple dashboard for analysis and monitoring
    ![grafana-dashboard-3.png](doc/grafana-dashboard-3.png)
 
 4. Select chart type "Time series"
-
+   
    ![Grafana_x_1.png](doc/Grafana_x_1.png)
 
    ![Grafana_x_2.png](doc/Grafana_x_2.png)
@@ -291,20 +285,18 @@ Create simple dashboard for analysis and monitoring
    ![Grafana_x_3.png](doc/Grafana_x_3.png)
 
 6. Fill in a query
+      ```
+         from(bucket: "Demo-Lyve-Logs")
+         |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+         |> filter(fn: (r) => r["_measurement"] == "audit-01")
+         |> filter(fn: (r) => r["_field"] == "auditEntry.api.timeToResponse")
+         |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
+         |> group(columns: ["auditEntry.api.name"])
+         |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
+         |> map(fn: (r) => ({ r with _value: r["_value"]/1000000.0 }))
+         |> yield()
 
-   ```
-      from(bucket: "Demo-Lyve-Logs")
-      |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-      |> filter(fn: (r) => r["_measurement"] == "audit-01")
-      |> filter(fn: (r) => r["_field"] == "auditEntry.api.timeToResponse")
-      |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
-      |> group(columns: ["auditEntry.api.name"])
-      |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-      |> map(fn: (r) => ({ r with _value: r["_value"]/1000000.0 }))
-      |> yield()
-
-   ```
-
+      ```
    > **Note:** You may view the language's documentation here [`Flux query language`](https://docs.influxdata.com/flux/v0.x/get-started/query-basics/)
 
 7. Change the time range to cover your S3 API Audit log data.
@@ -317,246 +309,253 @@ Create simple dashboard for analysis and monitoring
 
 9. Add the panel title
 
-   ![Grafana_f_3.png](doc/Grafana_f_3.png)
+      ![Grafana_f_3.png](doc/Grafana_f_3.png)
 
-   **Result**
+      **Result**
 
-   ![Grafana_f_4.png](doc/Grafana_f_4.png)
+      ![Grafana_f_4.png](doc/Grafana_f_4.png)
 
 10. In the "Standard options" section, Change the "Unit" to Time > milliseconds (ms)
 
-    ![Grafana_x_10.png](doc/Grafana_x_10.png)
+      ![Grafana_x_10.png](doc/Grafana_x_10.png)
 
-    **Result**
+      **Result**
 
-    ![Grafana_f_5.png](doc/Grafana_f_5.png)
+      ![Grafana_f_5.png](doc/Grafana_f_5.png)
 
 > **Note:** You may view the documentation about setting a chart on Grafana here [`Visualization panels`](https://grafana.com/docs/grafana/latest/visualizations/)
 
 11. When you're through with your visualization design, click "Apply".
 
-    ![grafana-dashboard-6.png](doc/grafana-dashboard-6.png)
+      ![grafana-dashboard-6.png](doc/grafana-dashboard-6.png)
 
-    **Result**
+      **Result**
 
-    ![Grafana_f_6.png](doc/Grafana_f_6.png)
+      ![Grafana_f_6.png](doc/Grafana_f_6.png)      
 
-    From S3 S3 API Audit log it store API name and time to response. We use this data to create a timeline chart to show the average response time as milliseconds by API per day.
+
+      From S3 S3 API Audit log it store API name and time to response. We use this data to create a timeline chart to show the average response time as milliseconds by API per day.
+
 
 12. Add a new chart panel to describe more about which bucket is take more time to response.
 
-    In this example, we need to describe the CompleteMultipartUpload API that take 2.03 seconds to response.
+      In this example, we need to describe the CompleteMultipartUpload API that take 2.03 seconds to response.
+      
+      ![Grafana_f_7.png](doc/Grafana_f_7.png)
 
-    ![Grafana_f_7.png](doc/Grafana_f_7.png)
+      12.1 Click on "Add panel" button
 
-    12.1 Click on "Add panel" button
+      ![Grafana_f_8.png](doc/Grafana_f_8.png)
 
-    ![Grafana_f_8.png](doc/Grafana_f_8.png)
+      And click on "Add an empty panel"
 
-    And click on "Add an empty panel"
+      12.2 Select the data source and fill in this query
 
-    12.2 Select the data source and fill in this query
+      The following influx query demonstrates, average response time of PutObjectPart API by bucket per day
 
-    The following influx query demonstrates, average response time of PutObjectPart API by bucket per day
+      ```
+      from(bucket: "Demo-Lyve-Logs")
+      |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+      |> filter(fn: (r) => r["_measurement"] == "audit-01")
+      |> filter(fn: (r) => r["_field"] == "auditEntry.api.timeToResponse")
+      |> filter(fn: (r) => r["auditEntry.api.name"] == "CompleteMultipartUpload")
+      |> group(columns: ["auditEntry.api.bucket"])
+      |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
+      |> map(fn: (r) => ({ r with _value: r["_value"]/1000000.0 }))
+      |> yield()
+      ```
 
-    ```
-    from(bucket: "Demo-Lyve-Logs")
-    |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-    |> filter(fn: (r) => r["_measurement"] == "audit-01")
-    |> filter(fn: (r) => r["_field"] == "auditEntry.api.timeToResponse")
-    |> filter(fn: (r) => r["auditEntry.api.name"] == "CompleteMultipartUpload")
-    |> group(columns: ["auditEntry.api.bucket"])
-    |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-    |> map(fn: (r) => ({ r with _value: r["_value"]/1000000.0 }))
-    |> yield()
-    ```
+      12.3 Add the panel title and change the "Unit" to Time > milliseconds (ms)
 
-    12.3 Add the panel title and change the "Unit" to Time > milliseconds (ms)
+      ![Grafana_f_9.png](doc/Grafana_f_9.png)
 
-    ![Grafana_f_9.png](doc/Grafana_f_9.png)
+      ![Grafana_x_10.png](doc/Grafana_x_10.png)
 
-    ![Grafana_x_10.png](doc/Grafana_x_10.png)
+      **Result**
 
-    **Result**
+      ![Grafana_f_10.png](doc/Grafana_f_10.png)
 
-    ![Grafana_f_10.png](doc/Grafana_f_10.png)
+            
 
 13. Add panel "Error count by bucket per day"
 
-    ![Grafana_f_11.png](doc/Grafana_f_11.png)
 
-    **Query**
+      ![Grafana_f_11.png](doc/Grafana_f_11.png)
 
-    The following influx query counts the errors for a bucket per day, by using the "auditEntry.api.statusCode" from S3 API Audit log that is not equal to 200
+      **Query**
 
-    ```
-    from(bucket: "Demo-Lyve-Logs")
-    |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-    |> filter(fn: (r) => r["_measurement"] == "audit-01")
-    |> filter(fn: (r) => r["_field"] == "message")
-    |> filter(fn: (r) => r["auditEntry.api.statusCode"] != "200")
-    |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
-    |> group(columns: ["auditEntry.api.bucket"])
-    |> aggregateWindow(every: 1d, fn: count, createEmpty: false)
-    ```
+      The following influx query demonstrates, Count the error by bucket per day by using 
+      the "auditEntry.api.statusCode" from S3 API Audit log that is not equal to 200
 
-    **Setting**
+      ```
+      from(bucket: "Demo-Lyve-Logs")
+      |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+      |> filter(fn: (r) => r["_measurement"] == "audit-01")
+      |> filter(fn: (r) => r["_field"] == "message")
+      |> filter(fn: (r) => r["auditEntry.api.statusCode"] != "200")
+      |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
+      |> group(columns: ["auditEntry.api.bucket"])
+      |> aggregateWindow(every: 1d, fn: count, createEmpty: false)
+      ```
 
-    Graph styles
+      **Setting**
 
+      Graph styles  
+      
          1. Style = Bars
          2. Fill opacity = 100
 
-    ![Grafana_f_12.png](doc/Grafana_f_12.png)
 
-    **Result**
+      ![Grafana_f_12.png](doc/Grafana_f_12.png)
 
-    ![Grafana_f_13.png](doc/Grafana_f_13.png)
+      **Result**
+
+      ![Grafana_f_13.png](doc/Grafana_f_13.png)
 
 14. Add panel "API calls by bucket per day"
 
-    ![Grafana_f_14.png](doc/Grafana_f_14.png)
+      ![Grafana_f_14.png](doc/Grafana_f_14.png)
 
-    **Query**
+      **Query**
 
-    The following influx query counts of API calls for a bucket per day from the S3 API Audit log. The design is timeseries chart.
+      The following influx query demonstrates, timeseries chart for show count of API call by bucket per day from S3 API Audit log.
 
-    ```
-    from(bucket: "Demo-Lyve-Logs")
-    |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-    |> filter(fn: (r) => r["_measurement"] == "audit-01")
-    |> filter(fn: (r) => r["_field"] == "message")
-    |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
-    |> group(columns: ["auditEntry.api.bucket"])
-    |> aggregateWindow(every: 1d, fn: count, createEmpty: false)
-    ```
+      ```
+      from(bucket: "Demo-Lyve-Logs")
+      |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+      |> filter(fn: (r) => r["_measurement"] == "audit-01")
+      |> filter(fn: (r) => r["_field"] == "message")
+      |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
+      |> group(columns: ["auditEntry.api.bucket"])
+      |> aggregateWindow(every: 1d, fn: count, createEmpty: false)
+      ```
 
-    **Setting**
+      **Setting**
 
-    Graph styles
-
+      Graph styles  
+      
          1. Style = Bars
          2. Fill opacity = 100
 
-    ![Grafana_f_12.png](doc/Grafana_f_12.png)
+      ![Grafana_f_12.png](doc/Grafana_f_12.png)
 
-    **Result**
+      **Result**
 
-    ![Grafana_f_15.png](doc/Grafana_f_15.png)
+      ![Grafana_f_15.png](doc/Grafana_f_15.png)
 
 15. Add panel "Total API Call by bucket"
 
-    ![Grafana_f_16.png](doc/Grafana_f_16.png)
+      ![Grafana_f_16.png](doc/Grafana_f_16.png)
 
-    **Query**
+      **Query**
 
-    The following influx query demonstrates, pie chart for show total API call by bucket from S3 API Audit log.
+      The following influx query demonstrates, pie chart for show total API call by bucket from S3 API Audit log.
 
-    ```
-    from(bucket: "Demo-Lyve-Logs")
-    |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-    |> filter(fn: (r) => r["_measurement"] == "audit-01")
-    |> filter(fn: (r) => r["_field"] == "message")
-    |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
-    |> group(columns: ["auditEntry.api.bucket"])
-    |> aggregateWindow(every: 1d, fn: count, createEmpty: false)
-    ```
+      ```
+      from(bucket: "Demo-Lyve-Logs")
+      |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+      |> filter(fn: (r) => r["_measurement"] == "audit-01")
+      |> filter(fn: (r) => r["_field"] == "message")
+      |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
+      |> group(columns: ["auditEntry.api.bucket"])
+      |> aggregateWindow(every: 1d, fn: count, createEmpty: false)
+      ```
 
-    **Setting**
+      **Setting**
 
-    Select "Pie chart"
+      Select "Pie chart"
 
-    ![Grafana_f_17.png](doc/Grafana_f_17.png)
+      ![Grafana_f_17.png](doc/Grafana_f_17.png)
 
-    Value options
-
+      Value options  
+      
          Calculation = Total
 
-    ![Grafana_f_18.png](doc/Grafana_f_18.png)
+      ![Grafana_f_18.png](doc/Grafana_f_18.png)
 
-    **Result**
+      **Result**
 
-    ![Grafana_f_19.png](doc/Grafana_f_19.png)
+      ![Grafana_f_19.png](doc/Grafana_f_19.png)
 
 16. Add panel "Max API Response Time"
 
-    ![Grafana_f_20.png](doc/Grafana_f_20.png)
+      ![Grafana_f_20.png](doc/Grafana_f_20.png)
 
-    **Query**
+      **Query**
 
-    The following influx query demonstrates, histogram chart showing max API response time by API name from S3 API Audit log.
+      The following influx query demonstrates, histogram chart for show max API response time by API name from S3 API Audit log.
 
-    ```
-    from(bucket: "Demo-Lyve-Logs")
-    |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-    |> filter(fn: (r) => r["_measurement"] == "audit-01")
-    |> filter(fn: (r) => r["_field"] == "auditEntry.api.timeToResponse")
-    |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
-    |> group(columns: ["auditEntry.api.name"])
-    |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-    |> map(fn: (r) => ({ r with _value: r["_value"]/1000000.0 }))
-    |> yield()
-    ```
+      ```
+      from(bucket: "Demo-Lyve-Logs")
+      |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+      |> filter(fn: (r) => r["_measurement"] == "audit-01")
+      |> filter(fn: (r) => r["_field"] == "auditEntry.api.timeToResponse")
+      |> filter(fn: (r) => r["auditEntry.api.bucket"] != "")
+      |> group(columns: ["auditEntry.api.name"])
+      |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
+      |> map(fn: (r) => ({ r with _value: r["_value"]/1000000.0 }))
+      |> yield()
+      ```
 
-    **Setting**
+      **Setting**
 
-    Select "Bar gauge"
+      Select "Bar gauge"
 
-    ![Grafana_f_26.png](doc/Grafana_f_26.png)
+      ![Grafana_f_26.png](doc/Grafana_f_26.png)
 
-    Value options
-
+      Value options  
+      
          Show = All values
 
-    ![Grafana_f_27.png](doc/Grafana_f_27.png)
+      ![Grafana_f_27.png](doc/Grafana_f_27.png)
 
-    Bar gauge
-
+      Bar gauge
+      
          Orientation = Horizontal
 
-    ![Grafana_f_28.png](doc/Grafana_f_28.png)
+      ![Grafana_f_28.png](doc/Grafana_f_28.png)
 
-    Standard options
-
+      Standard options  
+      
          Unit = Time > milliseconds (ms)
 
-    ![Grafana_x_10.png](doc/Grafana_x_10.png)
+      ![Grafana_x_10.png](doc/Grafana_x_10.png)
 
-    **Transform**
+      **Transform**
 
-    Select "Reduce"
+      Select "Reduce"
 
-    ![Grafana_f_21.png](doc/Grafana_f_21.png)
+      ![Grafana_f_21.png](doc/Grafana_f_21.png)
 
          Mode = Series to rows
          Calculation = Max
 
-    ![Grafana_f_22.png](doc/Grafana_f_22.png)
+      ![Grafana_f_22.png](doc/Grafana_f_22.png)
 
-    Click "Add transformation"
+      Click "Add transformation"
 
-    ![Grafana_f_23.png](doc/Grafana_f_23.png)
+      ![Grafana_f_23.png](doc/Grafana_f_23.png)
 
-    Select "Sort by"
+      Select "Sort by"
 
-    ![Grafana_f_24.png](doc/Grafana_f_24.png)
+      ![Grafana_f_24.png](doc/Grafana_f_24.png)
 
          Field = Max
          Reverse = true
 
-    ![Grafana_f_25.png](doc/Grafana_f_25.png)
+      ![Grafana_f_25.png](doc/Grafana_f_25.png)
 
-    **Result**
+      **Result**
 
-    ![Grafana_f_29.png](doc/Grafana_f_29.png)
+      ![Grafana_f_29.png](doc/Grafana_f_29.png)
 
 17. You can move the panel by drag it on the top.
 
-    ![Grafana_f_30.png](doc/Grafana_f_30.png)
+      ![Grafana_f_30.png](doc/Grafana_f_30.png)
 
 18. You can resize the panel by drag it on the bottom right
 
-    ![Grafana_f_31.png](doc/Grafana_f_31.png)
+      ![Grafana_f_31.png](doc/Grafana_f_31.png)
 
 # Results
 

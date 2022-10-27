@@ -4,7 +4,7 @@
 import helpers.config_manager as config
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
-from datetime import datetime
+from datetime import datetime, timezone
 from tqdm import tqdm
 
 def __connect():
@@ -26,11 +26,11 @@ def __create_bucket(api, bucket_name, description=''):
 
     return bucket
 
-def make_point(measurement, tags, fields, time = datetime.now()):
+def make_point(measurement, tags, fields, time = datetime.now(timezone.utc)):
     if time:
         timestamp = time
     else:
-        timestamp = datetime.now()
+        timestamp = datetime.now(timezone.utc)
     data = { 
         "measurement": measurement, 
         "tags": tags,
@@ -58,6 +58,15 @@ def write(point):
             write(point)
 
         raise Exception(e)
+
+
+def is_init_influx():
+    client, api = __connect()
+    bucket_name = config.Get('influxdb.bucket')
+    if __hasBucket(api, bucket_name):
+        return False
+    else:
+        return True
 
 def BatchWrite(points):
     """

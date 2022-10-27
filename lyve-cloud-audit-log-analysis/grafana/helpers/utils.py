@@ -1,11 +1,11 @@
 # Copyright (c) 2021 Seagate Technology LLC and/or its Affiliates
 
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 
 def makeID(paintext, unique=False):
     if unique:
-        paintext = "{}@{}".format(paintext, datetime.now().strftime('%d-%b-%Y %H:%M:%S:%f'))
+        paintext = "{}@{}".format(paintext, datetime.now(timezone.utc).strftime('%d-%b-%Y %H:%M:%S:%f'))
     return hashlib.md5(paintext.encode()).hexdigest()
 
 def fatdict(data):
