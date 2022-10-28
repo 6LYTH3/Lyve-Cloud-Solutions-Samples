@@ -20,33 +20,60 @@ Notice the integration solutions are not part of the Lyve Cloud product. The int
 
 # Integration Solutions
 
-_Please click on the arrows to expand_
+*Please click on the arrows to expand*
+<details><summary>Migrating and syncing to Lyve Cloud</summary> 
 
-<details><summary>Migrating and Syncing to LyveCloud Soultions</summary>
-
-| Solution                                                                                                    | Source | Technology | Installation |
-| ----------------------------------------------------------------------------------------------------------- | ------ | ---------- | ------------ |
-| 1. [On-demand sync of Linux local directory to LyveCloud bucket.](s3sync-local-to-lyvecloud/)               | Linux  | Cronjob    | Manual       |
-| 2. [Migrating and syncing between AWS and LyveCloud buckets.](syncer/)                                      | AWS    | AWS Lambda | Cli-Tool     |
-| 3. [Replicating new objects created in AWS S3 bucket to a Lyve Cloud bucket.](s3-replication-to-lyvecloud/) | AWS    | AWS Lambda | Manual       |
+| Solution|Source |Technology|Installation|
+|  --- |  --- | ---| ---|
+| 1. [On-demand sync of Linux local directory to Lyve Cloud bucket.](s3sync-local-to-lyvecloud/)| Linux |Cronjob|Manual
+| 2. [Migrating and syncing between AWS and Lyve Cloud buckets.](syncer/)|AWS|AWS Lambda|Cli-Tool|
+| 3. [Replicating new objects created in AWS S3 bucket to a Lyve Cloud bucket.](s3-replication-to-lyvecloud/)|AWS|AWS Lambda|Manual|
+| 4. [Full-stack solution for easily migrating and synchronizing files from other cloud services to Lyve Cloud](data-migration-and-sync-to-lyvecloud/). | Generic S3, GCP, Alibaba, Azure Containers | Web App| ---|
 
 </details>
 
-<details><summary>Pull and send audit logs from LyveCloud to different monitoring infrastructure </summary>
+<details><summary>Pull and send audit logs from Lyve Cloud to different monitoring solutions </summary> 
 
-|                                                           Solution                                                            | Monitoring Infrastructure |    Technology    |
-| :---------------------------------------------------------------------------------------------------------------------------: | :-----------------------: | :--------------: |
-|         1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](CloudWatch/)          |        CloudWatch         | Docker Container |
-| 2. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Azure Monitor(Log Analytics).](AzureMonitor/)  |       AzureMonitor        |   Function app   |
-| 3. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Grafana Dashboard.](lyve-cloud-audit-log-analysis/grafana) |          Grafana          | Docker Container |
+| Solution|Cloud Service|Technology|
+| :---:| :---:| :---:|
+| 1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](cloudwatch/)|CloudWatch|Python Script|
+| 2. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Azure Monitor(Log Analytics).](azure-monitor/)| Azure Monitor|Function app|
+| 3. [Replicating new objects created in AWS S3 bucket to a Lyve Cloud bucket.](s3-replication-to-lyvecloud/) | AWS    | AWS Lambda | Manual       |
 
 </details>
 
 <details><summary>Calculating Lyve Cloud bucket metrics</summary>
 
-|                                                   Solution                                                    | Monitoring Infrastructure | Technology |
-| :-----------------------------------------------------------------------------------------------------------: | :-----------------------: | :--------: |
-| 1. [Calculating Lyve Cloud bucket metrics and displaying them in AWS CloudWatch.](bucket-metrics-collection/) |        CloudWatch         | AWS Lambda |
+[bucket-metrics-collection](bucket-metrics-collection/)
+
+The purpose of this integration solution is to demonstrate how Lyve Cloud bucket metrics can be securely pulled using AWS Lambda and displayed in AWS CloudWatch. The bucket metrics displayed in this solution are: number of objects and bucket size. These metrics are calculated for the buckets that Lyve Cloud credentials can access. Once the metrics are pulled, it can be displayed using AWS CloudWatch dashboards.
+
+</details>
+
+<details><summary>Streaming media from Lyve Cloud bucket</summary> 
+
+[media-streamer](media-streamer/)
+
+Middleware solution built with Python and FastAPI, which is optimized for video streaming.
+
+It serves as a middleware from the browser request to the requested object, which is the video file. The implementation is based on the Range Requests Specification in RFC 7233.
+
+</details>
+
+
+<details><summary>Terraform Provider for Lyve Cloud</summary>
+
+[Terraform Lyve Cloud provider](https://registry.terraform.io/providers/Seagate/lyvecloud)
+
+Terraform provider plugin for managing Lyve Cloud S3 buckets, objects, permissions and service accounts.
+
+</details>
+
+<details><summary>Using tar file index to extract data efficiently</summary>
+
+[tar-index-extract](/tar-index-extract)
+
+Tool that allows extracting a small amount of files from a tar archive file located in an Lyve Cloud bucket.
 
 </details>
 
