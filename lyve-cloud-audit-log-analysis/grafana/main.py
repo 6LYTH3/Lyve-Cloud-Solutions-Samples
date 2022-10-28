@@ -4,10 +4,12 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from job import executor
 from datetime import datetime, timezone, timedelta
 from datasources import influxdb
+import os
 
 def Streaming():
 
     
+
     if influxdb.is_init_influx():
         # initail innflux by upload data last 30 day to influxdb
         OnetimePulling(720)
@@ -27,7 +29,7 @@ def Streaming():
 
     print("LogGateWay is running on Streaming mode")
     scheduler = BlockingScheduler()
-    scheduler.add_job(executor.run,trigger='cron',minute='24',hour='*') 
+    scheduler.add_job(executor.run,trigger='cron',minute='1',hour='*') 
     print('Press Ctrl+C to exit')
 
     try:
